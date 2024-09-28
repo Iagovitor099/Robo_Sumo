@@ -1,14 +1,22 @@
-//Pinos para o motor
-#define velm1 4
-#define m1a 15
-#define m1b 2
+
+
+//Pinos para o motor 1
+#define velm1 12
+#define m1a 14
+#define m1b 13
 #define tmp 5000
 
+
+//Pinos para o motor 2
+#define velm2 27
+#define m2a 15
+#define m2b 2
+
 //Pino para o sensor Infravermelho
-#define PinoSensor 13
+#define PinoSensor 18
 
 /*Velocidade PWM*/
-int vel = 255;
+int vel = 180;
 
 
 
@@ -26,16 +34,25 @@ static uint8_t taskCoreOne  = 1;
 
 void setup() {
   
-  Serial.begin(115200);
+  Serial.begin(9600);
 
-  /*Declaraçõo do modo de cada pino*/
+  /*Pinos motor 1*/
   pinMode(velm1, OUTPUT);
   pinMode(m1a, OUTPUT);
   pinMode(m1b, OUTPUT);
+
+  
+  //Pinos motor2 
+  pinMode(velm2, OUTPUT);
+  pinMode(m2a, OUTPUT);
+  pinMode(m2b, OUTPUT);
+
+  /*Pino sensor Infravermelho */
   pinMode(PinoSensor, INPUT);
 
   //SensorInfra = digitalRead(PinoSensor);
   PararMotor(m1a,m1b,velm1);
+  PararMotor(m2a,m2b,velm2);
 
   /*EM DESENVOLVIMENTO -- CRIAÇÃO DE TAREFASÃ MULTICORE --
    
@@ -86,16 +103,21 @@ void loop() {
   
   //Serial.println(digitalRead(PinoSensor));
   if(digitalRead(PinoSensor) == 0){
-    delay(50);
-    PararMotor(m1a,m1b,velm1);
+    //delay(50);
+   
+    ControleHorario(vel,m1a,m1b,velm1);
+    ControleHorario(vel,m2a,m2b,velm2);
     Serial.println(0);
+    Serial.flush();
     }else
     {
       Serial.println(1);
-      //delay(100);
-      ControleHorario(vel,m1a,m1b,velm1);
+      Serial.flush();
+      PararMotor(m1a,m1b,velm1);
+      PararMotor(m2a,m2b,velm2);
+      //delay(1000);
+      
     }
-  //delay(200);
 }
 
 void ControleHorario(int vel, int polo1, int polo2,int PWM)
@@ -113,9 +135,8 @@ void ControleAntiHorario(int vel, int polo1, int polo2,int PWM)
 }
 
 
-void PararMotor(int polo1, int polo2,int PWM)
-{
+void PararMotor(int polo1, int polo2, int PWM) {
   analogWrite(PWM, 0);
-  digitalWrite(polo1, LOW);
-  digitalWrite(polo2, LOW);
+  digitalWrite(polo1, HIGH);
+  digitalWrite(polo2, HIGH);
 }
