@@ -1,4 +1,10 @@
+#include <HCSR04.h>
 
+//Definindo os pinos echo e trig
+#define trig 32
+#define echo 33
+
+UltraSonicDistanceSensor distanceSensor(32, 33);
 
 //Pinos para o motor 1
 #define velm1 12
@@ -89,17 +95,10 @@ void setup() {
 
 
 void loop() {
-  
-  /*
-  ControleHorario(vel,m1a,m1b,velm1);
-  delay(tmp);
 
-  PararMotor(m1a,m1b,velm1);
-  delay(100);
-
-  ControleAntiHorario(vel,m1a,m1b,velm1);
-  delay(tmp);
-  */
+  // Convertendo distancia em Cm para mm
+  long distanciaCm = distanceSensor.measureDistanceCm();
+  long distanciaMm = distanciaCm * 10;
   
   //Serial.println(digitalRead(PinoSensor));
   if(digitalRead(PinoSensor) == 0){
