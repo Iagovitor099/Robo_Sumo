@@ -6,25 +6,31 @@
 
 UltraSonicDistanceSensor distanceSensor(32, 33);
 
+
 //Pinos para o motor 1
-#define velm1 12
+#define velm1 12 //pino de controle motor 1
 #define m1a 14
 #define m1b 13
 #define tmp 5000
 
 
 //Pinos para o motor 2
-#define velm2 27
+#define velm2 27 //pino de controle motor 2
 #define m2a 15
 #define m2b 2
 
 //Pino para o sensor Infravermelho
 #define PinoSensor 18
 
-/*Velocidade PWM*/
-int vel = 180;
+
+const int canalPWM = 0; //canal PWM na esp vai de 0 a 15
+const int freq = 5000; // Frequência de 5kHz
+const int resolution = 8; // ((2^8) -1) = 255
+
+int vel = 254;
 
 
+//--------------Funções-------------//
 
 void ControleHorario(int vel, int polo1, int polo2,int PWM);
 
@@ -32,16 +38,12 @@ void ControleAntiHorario(int vel, int polo1, int polo2,int PWM);
 
 void PararMotor(int polo1, int polo2,int PWM);
 
-/* Em desenvolvimento
-//declarando as tasks
-static uint8_t taskCoreZero = 0;
-static uint8_t taskCoreOne  = 1;
-*/
 
 void setup() {
   
-  Serial.begin(9600);
-
+  Serial.begin(115200);
+  ledcAttachChannel(velm1, freq, resolution, canalPWM);
+  
   /*Pinos motor 1*/
   pinMode(velm1, OUTPUT);
   pinMode(m1a, OUTPUT);
@@ -60,37 +62,6 @@ void setup() {
   PararMotor(m1a,m1b,velm1);
   PararMotor(m2a,m2b,velm2);
 
-  /*EM DESENVOLVIMENTO -- CRIAÇÃO DE TAREFASÃ MULTICORE --
-   
-  //Tarefa 1 vai rodar no Core 0, com prioridade 1
-  xTaskCreatePinnedToCore(
-    ControleHorario,
-    "ControleHorario",
-    5000,
-    NULL,
-    1,
-    NULL
-    taskCoreZero);
-  
-  //Tarefa 2 vai rodar no Core 0, com prioridade 1
-  xTaskCreatePinnedToCore(
-    ControleAntiHorario,
-    "ControleAntiHorario",
-    5000,
-    NULL,
-    1,
-    NULL
-    taskCoreZero);
-  
-   //Tarefa 3 vai rodar no Core 1, com prioridade 2
-  xTaskCreatePinnedToCore(
-    SensorInfra,
-    "SensorInfra",
-    5000,
-    NULL,
-    2,
-    NULL
-    taskCoreOne);*/
 }
 
 
@@ -103,8 +74,10 @@ void loop() {
   //Serial.println(digitalRead(PinoSensor));
   if(digitalRead(PinoSensor) == 0){
     //delay(50);
-   
-    ControleHorario(vel,m1a,m1b,velm1);
+    
+    ControleHorarioPWM(canalPWM, m1a,m1b);
+    
+    //ControleHorario(vel,m1a,m1b,canalPWM);
     ControleHorario(vel,m2a,m2b,velm2);
     Serial.println(0);
     Serial.flush();
@@ -112,7 +85,8 @@ void loop() {
     {
       Serial.println(1);
       Serial.flush();
-      PararMotor(m1a,m1b,velm1);
+      
+      PararMotorPWM(canalPWM,m1a,m1b);
       PararMotor(m2a,m2b,velm2);
       //delay(1000);
       
@@ -138,4 +112,20 @@ void PararMotor(int polo1, int polo2, int PWM) {
   analogWrite(PWM, 0);
   digitalWrite(polo1, HIGH);
   digitalWrite(polo2, HIGH);
+}
+
+void ControleHorarioPWM(int canalPWM, int polo1, int polo2)
+{   
+    
+    ledcWriteChannel(canalPWM, 254);
+    digitalWrite(polo1, HIGH);
+    digitalWrite(polo2, LOW);
+}
+
+
+void PararMotorPWM(int canalPWM, int polo1, int polo2)
+{
+    ledcWriteChannel(canalPWM, 254);
+    digitalWrite(polo1, HIGH);
+    digitalWrite(polo2, HIGH);
 }
